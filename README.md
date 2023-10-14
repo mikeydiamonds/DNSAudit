@@ -3,7 +3,7 @@
 
 ## Description
 
-`DNSAudit` is a comprehensive DNS provider audit tool designed to test how different DNS providers resolve domains. Inspired by Tom Lawrence's 2023 [DNS provider audit](https://youtu.be/NUT4K3tk9Ns?si=qz_Lq9gwUbuBjx2n) and enhanced by myself, this script focuses on the indicators of various DNS providers when encountering potentially harmful or compromised domains.
+`DNSAudit` is a comprehensive DNS provider audit tool designed to test how different DNS providers resolve domains. Inspired by Tom Lawrence's 2023 Best DNS for Secure Browsing [video](https://youtu.be/NUT4K3tk9Ns?si=qz_Lq9gwUbuBjx2n) and [code](https://forums.lawrencesystems.com/t/which-is-the-best-dns-for-secure-browsing-cloudflare-quad9-nextdns-and-adguard-dns-youtube-release/18910/2) and combined with previous private efforts from myself, this script focuses on the indicators of various DNS providers when encountering potentially harmful or compromised domains.
 
 ## Features
 
