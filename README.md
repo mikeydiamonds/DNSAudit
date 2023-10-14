@@ -15,4 +15,20 @@
 
 ## Usage
 
-1. Clone the repository:
+1. Clone the repository: `git clone https://github.com/mikeydiamonds/DNSAudit.git`
+2. Navigate to the directory: `cd DNSAudit.sh`
+3. Make the script executable: `chmod +x DNSAudit.sh`
+4. Run the script: `./DNSAudit.sh`
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## Disclaimer
+
+This code and its contents are solely my own work in combination with [code provided by Tom Lawrence](https://forums.lawrencesystems.com/t/which-is-the-best-dns-for-secure-browsing-cloudflare-quad9-nextdns-and-adguard-dns-youtube-release/18910/2) and do not reflect the views, strategies, or opinions of my employer or any other entity. Use this script at your own discretion and responsibility.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
