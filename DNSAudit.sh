@@ -8,11 +8,11 @@
 domain_list='domains.txt' # one FQDN per line in file
 
 # get and prepare the compromised domain list from Zonefiles
-wget -q "https://zonefiles.io/f/compromised/domains/live/" -O temp.txt # download the domain list
-grep -E '^[a-zA-Z0-9-]+\.(com|net)$' temp.txt > domains.txt # extract just root .com and .net domains
-# sed -i '' '50,$ d' domains.txt # truncate domain list to 50 for development
-sort -t= domains.txt -o domains.txt # sort the domains alphabetically, why not ;)D
-rm temp.txt # remove the temp file
+wget -q "https://zonefiles.io/f/compromised/domains/live/" -O temp.txt  # download the domain list
+grep -E '^[a-zA-Z0-9-]+\.(com|net)$' temp.txt >domains.txt              # extract just root .com and .net domains
+# sed -i '' '50,$ d' domains.txt                                        # truncate domain list to 50 for development
+sort -t= domains.txt -o domains.txt                                     # sort the domains alphabetically, why not ;)D
+rm temp.txt                                                             # remove the temp file
 
 # set variables for pretty terminal colors
 RED='\033[0;31m'
@@ -30,16 +30,16 @@ domainlist='domainlist.csv'
 # 3. Create a policy to block all threats
 # 4. Assign that policy to the network with your WAN IP
 
-DNSFilter='103.247.36.36' # free trial - https://app.dnsfilter.com/signup
-Umbrella='208.67.220.220' #free trial - https://signup.umbrella.com/
+DNSFilter='103.247.36.36'       # free trial - https://app.dnsfilter.com/signup
+Umbrella='208.67.220.220'       # free trial - https://signup.umbrella.com/
 UmbrellaFamily='208.67.222.123' # free - https://www.opendns.com/setupguide/#familyshield
-Cloudflare='1.1.1.1' # free - https://1.1.1.1/
+Cloudflare='1.1.1.1'            # free - https://1.1.1.1/
 CloudflareGateway='172.64.36.1' # free up to 50 users - look for Zero Trust https://dash.cloudflare.com/
-CloudflareFamilies='1.1.1.2' # free - https://1.1.1.1/family/
-Google='8.8.8.8' # free - https://developers.google.com/speed/public-dns/
-Quad9='9.9.9.9' # free - https://www.quad9.net/
-NextDNS='45.90.28.202' # free up to 300k queries/month - https://nextdns.io/
-Adguard='94.140.14.14' # free - https://adguard-dns.io/en/public-dns.html
+CloudflareFamilies='1.1.1.2'    # free - https://1.1.1.1/family/
+Google='8.8.8.8'                # free - https://developers.google.com/speed/public-dns/
+Quad9='9.9.9.9'                 # free - https://www.quad9.net/
+NextDNS='45.90.28.202'          # free up to 300k queries/month - https://nextdns.io/
+Adguard='94.140.14.14'          # free - https://adguard-dns.io/en/public-dns.html
 
 # seconds to wait between lookups:
 loop_wait='1' # Is set to 1 second.
@@ -54,10 +54,11 @@ echo "domain,DNSFilter,Umbrella,UmbrellaFamily,Cloudflare,CloudflareGateway,Clou
 # this csv will include the returned IP addresses and blocked or not
 echo "domain,DNSFilter IP,DNSFilter,Umbrella IP,Umbrella,UmbrellaFamily IP,UmbrellaFamily,Cloudflare IP,Cloudflare,CloudflareGateway IP,CloudflareGateway,CloudflareFamilies IP,CloudflareFamilies,Google IP,Google,Quad9 IP,Quad9,NextDNS IP,NextDNS,Adguard IP,Adguard" >results_and_ips.csv
 
-for domain in `cat $domain_list` # Start looping through domains
-do
+for domain in $( # Start looping through domains
+    cat $domain_list
+); do
     # get the status code of the domain using Cloudflare's 1.1.1.1
-    status=$(dig @$Cloudflare +time=3 +tries=1 "$domain" | grep "status:" | cut -d" " -f6 | sed 's/.$//')
+    status=$(dig @"${Cloudflare}" +time=3 +tries=1 "${domain}" | grep "status:" | cut -d" " -f6 | sed 's/.$//')
 
     # only proceed if the domain actually resolves and returns NOERROR
     if [ "$status" = "NOERROR" ]; then
@@ -73,81 +74,85 @@ do
         # if no IP is returned I have assigned "null" with a "blocked" result since the domain would not be accessible
 
         # DNSFilter (free trial - https://app.dnsfilter.com/signup)
-        DNSFilterIP=`dig @$DNSFilter +short $domain |tail -n1`;
+        DNSFilterIP=$(dig @"${DNSFilter}" +short "${domain}" | tail -n1)
         case $DNSFilterIP in
-            198.251.90.70|198.251.90.71|198.251.90.72|45.54.28.15|127.0.0.1|0.0.0.0|'') DNSFilterResult=blocked ;;
-            *) DNSFilterResult=allowed ;;
+        198.251.90.70 | 198.251.90.71 | 198.251.90.72 | 45.54.28.15 | 45.54.28.11 | 127.0.0.1 | 0.0.0.0 | '') DNSFilterResult=blocked ;;
+        *) DNSFilterResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$DNSFilterResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "DNSFilter:" "$DNSFilterResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "DNSFilter:" "$DNSFilterResult")
 
         # Umbrella (free trial - https://signup.umbrella.com/)
-        UmbrellaIP=`dig @$Umbrella +short $domain |tail -n1`;
+        UmbrellaIP=$(dig @"${Umbrella}" +short "${domain}" | tail -n1)
         case $UmbrellaIP in
-            146.112.61.104|146.112.61.105|146.112.61.106|146.112.61.107|146.112.61.108|146.112.61.110|127.0.0.1|0.0.0.0|'') UmbrellaResult=blocked ;;
-            *) UmbrellaResult=allowed ;;
+        146.112.61.104 | 146.112.61.105 | 146.112.61.106 | 146.112.61.107 | 146.112.61.108 | 146.112.61.110 | 127.0.0.1 | 0.0.0.0 | '') UmbrellaResult=blocked ;;
+        *) UmbrellaResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$UmbrellaResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Umbrella:" "$UmbrellaResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Umbrella:" "$UmbrellaResult")
 
         # Umbrella Family Shield (free - https://www.opendns.com/setupguide/#familyshield)
-        UmbrellaFamilyIP=`dig @$UmbrellaFamily +short $domain |tail -n1`;
+        UmbrellaFamilyIP=$(dig @"${UmbrellaFamily}" +short "${domain}" | tail -n1)
         case $UmbrellaFamilyIP in
-            146.112.61.104|146.112.61.105|146.112.61.106|146.112.61.107|146.112.61.108|146.112.61.110|127.0.0.1|0.0.0.0|'') UmbrellaFamilyResult=blocked ;;
-            *) UmbrellaFamilyResult=allowed ;;
+        146.112.61.104 | 146.112.61.105 | 146.112.61.106 | 146.112.61.107 | 146.112.61.108 | 146.112.61.110 | 127.0.0.1 | 0.0.0.0 | '') UmbrellaFamilyResult=blocked ;;
+        *) UmbrellaFamilyResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$UmbrellaFamilyResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Umbrella Family Shield:" "$UmbrellaFamilyResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Umbrella Family Shield:" "$UmbrellaFamilyResult")
 
         # Cloudflare (free - https://1.1.1.1/)
-        CloudflareIP=`dig @$Cloudflare +short $domain |tail -n1`;
+        CloudflareIP=$(dig @"${Cloudflare}" +short "${domain}" | tail -n1)
         case $CloudflareIP in
-            127.0.0.1|0.0.0.0|'') CloudflareResult=blocked ;;
-            *) CloudflareResult=allowed ;;
+        127.0.0.1 | 0.0.0.0 | '') CloudflareResult=blocked ;;
+        *) CloudflareResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$CloudflareResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Cloudflare:" "$CloudflareResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Cloudflare:" "$CloudflareResult")
 
         # Cloudflare Gateway (free up to 50 users - look for Zero Trust https://dash.cloudflare.com/)
-        CloudflareGatewayIP=`dig @$CloudflareGateway +short $domain |tail -n1`;
+        CloudflareGatewayIP=$(dig @"${CloudflareGateway}" +short "${domain}" | tail -n1)
         case $CloudflareGatewayIP in
-            127.0.0.1|0.0.0.0|'') CloudflareGatewayResult=blocked ;;
-            *) CloudflareGatewayResult=allowed ;;
+        127.0.0.1 | 0.0.0.0 | '') CloudflareGatewayResult=blocked ;;
+        *) CloudflareGatewayResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$CloudflareGatewayResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Cloudflare Gateway:" "$CloudflareGatewayResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Cloudflare Gateway:" "$CloudflareGatewayResult")
 
         # Cloudflare Families just Malware (free - https://1.1.1.1/family/)
-        CloudflareFamiliesIP=`dig @$CloudflareFamilies +short $domain |tail -n1`;
+        CloudflareFamiliesIP=$(dig @"${CloudflareFamilies}" +short "${domain}" | tail -n1)
         case $CloudflareFamiliesIP in
-            127.0.0.1|0.0.0.0|'') CloudflareFamiliesResult=blocked ;;
-            *) CloudflareFamiliesResult=allowed ;;
+        127.0.0.1 | 0.0.0.0 | '') CloudflareFamiliesResult=blocked ;;
+        *) CloudflareFamiliesResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$CloudflareFamiliesResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Cloudflare for Families:" "$CloudflareFamiliesResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Cloudflare for Families:" "$CloudflareFamiliesResult")
 
         # Google (free - https://developers.google.com/speed/public-dns/)
-        GoogleIP=`dig @$Google +short $domain |tail -n1`;
+        GoogleIP=$(dig @"${Google}" +short "${domain}" | tail -n1)
         case $GoogleIP in
-            127.0.0.1|0.0.0.0|'') GoogleResult=blocked ;;
-            *) GoogleResult=allowed ;;
+        127.0.0.1 | 0.0.0.0 | '') GoogleResult=blocked ;;
+        *) GoogleResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$GoogleResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Google:" "$GoogleResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Google:" "$GoogleResult")
 
         # Quad9 (free - https://www.quad9.net/)
-        Quad9IP=`dig @$Quad9 +short $domain |tail -n1`;
-        authority=$(dig +time=3 +tries=1 "$domain" | grep "flags:" | cut -d" " -f11 | sed 's/.$//')
-        if [ "$status" = "NXDOMAIN" ] && [ "$authority" = 0 ]; then
+        Quad9IP=$(dig @"${Quad9}" +short "${domain}" | tail -n1)
+        # Quad9 returns no IP address (null) if a domian is blocked so the status and authority checks on unnessary overhead on the script
+        # Quad9Status=$(dig @"${Quad9}" +time=3 +tries=1 "${domain}" | grep "status:" | cut -d" " -f6 | sed 's/.$//')
+        # authority=$(dig +time=3 +tries=1 "$domain" | grep "flags:" | cut -d" " -f11 | sed 's/.$//')
+        if [ "$Quad9Status" = "NXDOMAIN" ] && [ "$authority" = 0 ]; then
             Quad9Result="blocked"
-        elif [ "$status" = "NOERROR" ]; then
+        elif [ "$Quad9IP" = '' ]; then
+            Quad9Result="blocked"
+        elif [ "$Quad9Status" = "NOERROR" ]; then
             Quad9Result="allowed"
         fi
 
@@ -155,20 +160,20 @@ do
         [ "$Quad9Result" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Quad9:" "$Quad9Result") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Quad9:" "$Quad9Result")
 
         # NextDNS (free up to 300k queries/month - https://nextdns.io/)
-        NextDNSIP=`dig @$NextDNS +short $domain |tail -n1`;
+        NextDNSIP=$(dig @"${NextDNS}" +short "${domain}" | tail -n1)
         case $NextDNSIP in
-            64.187.227.105|45.32.219.28|45.90.28.202|45.90.30.202|127.0.0.1|0.0.0.0|'') NextDNSResult=blocked ;;
-            *) NextDNSResult=allowed ;;
+        64.187.227.105 | 45.32.219.28 | 45.90.28.202 | 45.90.30.202 | 127.0.0.1 | 0.0.0.0 | '') NextDNSResult=blocked ;;
+        *) NextDNSResult=allowed ;;
         esac
 
         # pretty print results to the terminal
         [ "$NextDNSResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "NextDNS:" "$NextDNSResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "NextDNS:" "$NextDNSResult")
 
         # Adguard (free - https://adguard-dns.io/en/public-dns.html)
-        AdguardIP=`dig @$Adguard +short $domain |tail -n1`;
+        AdguardIP=$(dig @"${Adguard}" +short "${domain}" | tail -n1)
         case $AdguardIP in
-            94.140.14.33|127.0.0.1|0.0.0.0|'') AdguardResult=blocked ;;
-            *) AdguardResult=allowed ;;
+        94.140.14.33 | 127.0.0.1 | 0.0.0.0 | '') AdguardResult=blocked ;;
+        *) AdguardResult=allowed ;;
         esac
 
         # pretty print results to the terminal
@@ -182,9 +187,9 @@ do
 
         echo "$domain,${DNSFilterIP:=null},$DNSFilterResult,${UmbrellaIP:=null},$UmbrellaResult,${UmbrellaFamilyIP:=null},$UmbrellaFamilyResult,${CloudflareIP:=null},$CloudflareResult,${CloudflareGatewayIP:=null},$CloudflareGatewayResult,${CloudflareFamiliesIP:=null},$CloudflareFamiliesResult,${GoogleIP:=null},$GoogleResult,${Quad9IP:=null},$Quad9Result,${NextDNSIP:=null},$NextDNSResult,${AdguardIP:=null},$AdguardResult" >>results_and_ips.csv
 
-        sleep $loop_wait # pause before the next lookup to avoid flooding NS
+        # sleep $loop_wait # pause before the next lookup to avoid flooding NS
 
     else
         :
-    fi 
-done;
+    fi
+done
