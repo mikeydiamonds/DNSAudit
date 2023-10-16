@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# DNSAudit - modified from Tom Lawrence's 2023 Best DNS for Secure Browsing script
+# DNSAudit - modified from Tom Lawrence's 2023 DNS provider audit
 # https://youtu.be/NUT4K3tk9Ns?si=cwaHKuN-JSRcOwnz
 # author: Mikey Pruitt - https://www.linkedin.com/in/roadtoCISO/
 
@@ -144,11 +144,11 @@ for domain in $( # Start looping through domains
         [ "$GoogleResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Google:" "$GoogleResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Google:" "$GoogleResult")
 
         # Quad9 (free - https://www.quad9.net/)
+        Quad9dig=$(dig @"${Quad9}" "${domain}")
+        Quad9Status=$(echo "$Quad9dig" | grep "status:" | cut -d" " -f6 | sed 's/.$//')
+        Quad9Authority=$(echo "$Quad9dig" | grep "flags:" | cut -d" " -f11 | sed 's/.$//')
         Quad9IP=$(dig @"${Quad9}" +short "${domain}" | tail -n1)
-        # Quad9 returns no IP address (null) if a domian is blocked so the status and authority checks on unnessary overhead on the script
-        # Quad9Status=$(dig @"${Quad9}" +time=3 +tries=1 "${domain}" | grep "status:" | cut -d" " -f6 | sed 's/.$//')
-        # authority=$(dig +time=3 +tries=1 "$domain" | grep "flags:" | cut -d" " -f11 | sed 's/.$//')
-        if [ "$Quad9Status" = "NXDOMAIN" ] && [ "$authority" = 0 ]; then
+        if [ "$Quad9Status" = "NXDOMAIN" ] && [ "$Quad9Authority" = 0 ]; then
             Quad9Result="blocked"
         elif [ "$Quad9IP" = '' ]; then
             Quad9Result="blocked"
