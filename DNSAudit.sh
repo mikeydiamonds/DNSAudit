@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# DNSAudit - modified from Tom Lawrence's 2023 DNS provider audit
+# DNSAudit - modified from Tom Lawrence's 2023 Best DNS for Secure Browsing script
 # https://youtu.be/NUT4K3tk9Ns?si=cwaHKuN-JSRcOwnz
 # author: Mikey Pruitt - https://www.linkedin.com/in/roadtoCISO/
 
