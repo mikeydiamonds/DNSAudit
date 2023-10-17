@@ -7,7 +7,7 @@
 
 ## Features
 
-- Fetches a list of compromised domains for testing.
+- Fetches a list of compromised domains for testing from [Zonefiles.io](https://zonefiles.io/compromised-domain-list/).
 - Filters for `.com` and `.net` domains.
 - Tests domain resolution across various DNS providers.
 - Provides real-time, visually engaging feedback in the terminal.
