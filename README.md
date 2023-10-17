@@ -15,6 +15,8 @@
 
 ## Usage
 
+This script is meant to test network deployments only and will not work on roaming agents.
+
 1. Clone the repository: `git clone https://github.com/mikeydiamonds/DNSAudit.git`
 2. Navigate to the directory: `cd DNSAudit.sh`
 3. Make the script executable: `chmod +x DNSAudit.sh`
