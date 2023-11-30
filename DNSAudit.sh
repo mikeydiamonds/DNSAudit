@@ -40,19 +40,20 @@ Google='8.8.8.8'                # free - https://developers.google.com/speed/pub
 Quad9='9.9.9.9'                 # free - https://www.quad9.net/
 NextDNS='45.90.28.202'          # free up to 300k queries/month - https://nextdns.io/
 Adguard='94.140.14.14'          # free - https://adguard-dns.io/en/public-dns.html
+ScoutDNS='76.76.16.16'          # free trial - https://www.scoutdns.com/
 
 # seconds to wait between lookups:
 loop_wait='1' # Is set to 1 second.
 
 # create csv files to collect the results
 # this csv only contains the returned IP addresses
-echo "domain,DNSFilter IP,Umbrella IP,UmbrellaFamily IP,Cloudflare IP,CloudflareGateway IP,CloudflareFamilies IP,Google IP,Quad9 IP,NextDNS IP,Adguard IP" >only_ips.csv
+echo "domain,DNSFilter IP,Umbrella IP,UmbrellaFamily IP,Cloudflare IP,CloudflareGateway IP,CloudflareFamilies IP,Google IP,Quad9 IP,NextDNS IP,Adguard IP,ScoutDNS IP" >only_ips.csv
 
 # this csv will tell us blocked or allowed
-echo "domain,DNSFilter,Umbrella,UmbrellaFamily,Cloudflare,CloudflareGateway,CloudflareFamilies,Google,Quad9,NextDNS,Adguard" >only_results.csv
+echo "domain,DNSFilter,Umbrella,UmbrellaFamily,Cloudflare,CloudflareGateway,CloudflareFamilies,Google,Quad9,NextDNS,Adguard,ScoutDNS" >only_results.csv
 
 # this csv will include the returned IP addresses and blocked or not
-echo "domain,DNSFilter IP,DNSFilter,Umbrella IP,Umbrella,UmbrellaFamily IP,UmbrellaFamily,Cloudflare IP,Cloudflare,CloudflareGateway IP,CloudflareGateway,CloudflareFamilies IP,CloudflareFamilies,Google IP,Google,Quad9 IP,Quad9,NextDNS IP,NextDNS,Adguard IP,Adguard" >results_and_ips.csv
+echo "domain,DNSFilter IP,DNSFilter,Umbrella IP,Umbrella,UmbrellaFamily IP,UmbrellaFamily,Cloudflare IP,Cloudflare,CloudflareGateway IP,CloudflareGateway,CloudflareFamilies IP,CloudflareFamilies,Google IP,Google,Quad9 IP,Quad9,NextDNS IP,NextDNS,Adguard IP,Adguard,ScoutDNS IP,ScoutDNS" >results_and_ips.csv
 
 for domain in $( # Start looping through domains
     cat $domain_list
@@ -179,13 +180,23 @@ for domain in $( # Start looping through domains
         # pretty print results to the terminal
         [ "$AdguardResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Adguard:" "$AdguardResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "Adguard:" "$AdguardResult")
 
+        # ScoutDNS (free trial - https://www.scoutdns.com/)
+        ScoutDNSIP=$(dig @"${ScoutDNS}" +short "${domain}" | tail -n1)
+        case $ScoutDNSIP in
+        208.167.239.230 | 127.0.0.1 | 0.0.0.0 | '') ScoutDNSResult=blocked ;;
+        *) ScoutDNSResult=allowed ;;
+        esac
+
+        # pretty print results to the terminal
+        [ "$ScoutDNSResult" = "blocked" ] && (printf "${BLUE}%26s${NC}  ${GREEN}%8s${NC}\n" "Adguard:" "$ScoutDNSResult") || (printf "${BLUE}%26s${NC}  ${RED}%8s${NC}\n" "ScoutDNS:" "$ScoutDNSResult")
+
         # write results to our csv files
         # the ${ServiceName:=null} syntax assigns null if no IP was returned
-        echo "$domain,${DNSFilterIP:=null},${UmbrellaIP:=null},${UmbrellaFamilyIP:=null},${CloudflareIP:=null},${CloudflareGatewayIP:=null},${CloudflareFamiliesIP:=null},${GoogleIP:=null},${Quad9IP:=null},${NextDNSIP:=null},${AdguardIP:=null}" >>only_ips.csv
+        echo "$domain,${DNSFilterIP:=null},${UmbrellaIP:=null},${UmbrellaFamilyIP:=null},${CloudflareIP:=null},${CloudflareGatewayIP:=null},${CloudflareFamiliesIP:=null},${GoogleIP:=null},${Quad9IP:=null},${NextDNSIP:=null},${AdguardIP:=null},${ScoutDNSIP:=null}" >>only_ips.csv
 
-        echo "$domain,$DNSFilterResult,$UmbrellaResult,$UmbrellaFamilyResult,$CloudflareResult,$CloudflareGatewayResult,$CloudflareFamiliesResult,$GoogleResult,$Quad9Result,$NextDNSResult,$AdguardResult" >>only_results.csv
+        echo "$domain,$DNSFilterResult,$UmbrellaResult,$UmbrellaFamilyResult,$CloudflareResult,$CloudflareGatewayResult,$CloudflareFamiliesResult,$GoogleResult,$Quad9Result,$NextDNSResult,$AdguardResult,$ScoutDNSResult" >>only_results.csv
 
-        echo "$domain,${DNSFilterIP:=null},$DNSFilterResult,${UmbrellaIP:=null},$UmbrellaResult,${UmbrellaFamilyIP:=null},$UmbrellaFamilyResult,${CloudflareIP:=null},$CloudflareResult,${CloudflareGatewayIP:=null},$CloudflareGatewayResult,${CloudflareFamiliesIP:=null},$CloudflareFamiliesResult,${GoogleIP:=null},$GoogleResult,${Quad9IP:=null},$Quad9Result,${NextDNSIP:=null},$NextDNSResult,${AdguardIP:=null},$AdguardResult" >>results_and_ips.csv
+        echo "$domain,${DNSFilterIP:=null},$DNSFilterResult,${UmbrellaIP:=null},$UmbrellaResult,${UmbrellaFamilyIP:=null},$UmbrellaFamilyResult,${CloudflareIP:=null},$CloudflareResult,${CloudflareGatewayIP:=null},$CloudflareGatewayResult,${CloudflareFamiliesIP:=null},$CloudflareFamiliesResult,${GoogleIP:=null},$GoogleResult,${Quad9IP:=null},$Quad9Result,${NextDNSIP:=null},$NextDNSResult,${AdguardIP:=null},$AdguardResult,${ScoutDNSIP:=null},$ScoutDNSResult" >>results_and_ips.csv
 
         # sleep $loop_wait # pause before the next lookup to avoid flooding NS
 
